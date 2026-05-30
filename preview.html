@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>ORUAM BSS — M5Cardputer Preview</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@300;400&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: #0d0d0d;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 48px 24px 60px;
+      font-family: 'Courier New', monospace;
+      color: #555;
+      min-height: 100vh;
+      gap: 32px;
+    }
+    header { color: #1a6e1a; font-size: 11px; letter-spacing: 6px; text-align: center; }
+    .sub   { font-size: 9px; letter-spacing: 3px; color: #1e1e1e; margin-top: 4px; text-align: center; }
+
+    .screens { display: flex; gap: 60px; align-items: flex-start; }
+
+    .screen-wrap { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+    .label { font-size: 9px; letter-spacing: 4px; color: #2a2a2a; }
+
+    .bezel {
+      background: #111;
+      border-radius: 8px;
+      padding: 10px;
+      border: 1px solid #1a1a1a;
+      box-shadow: 0 0 0 1px #0a0a0a, 0 12px 40px rgba(0,0,0,.85);
+    }
+
+    canvas {
+      display: block;
+      border-radius: 3px;
+      width: 480px;
+      height: 270px;
+      image-rendering: pixelated;
+    }
+
+    .export-btn {
+      background: none;
+      border: 1px solid #1e1e1e;
+      border-radius: 3px;
+      color: #252525;
+      font-family: 'Courier New', monospace;
+      font-size: 8px;
+      letter-spacing: 3px;
+      padding: 5px 14px;
+      cursor: pointer;
+      transition: border-color .15s, color .15s;
+    }
+    .export-btn:hover { border-color: #1a4a1a; color: #1a6e1a; }
+
+    .legend { font-size: 9px; letter-spacing: 2px; color: #1d1d1d; text-align: center; }
+    .legend span { color: #1a4a1a; }
+  </style>
+</head>
+<body>
+
+  <div>
+    <header>ORUAM BSS — M5CARDPUTER ADV · DISPLAY PREVIEW</header>
+    <div class="sub">240 × 135 px · RGB565 · ESP32-S3</div>
+  </div>
+
+  <div class="screens">
+
+    <div class="screen-wrap">
+      <div class="label">BOOT SPLASH</div>
+      <div class="bezel">
+        <canvas id="splash" width="240" height="135"></canvas>
+      </div>
+      <button class="export-btn" onclick="exportPng('splash', 'preview-splash.png')">SAVE PNG</button>
+    </div>
+
+    <div class="screen-wrap">
+      <div class="label">MAIN MENU</div>
+      <div class="bezel">
+        <canvas id="menu" width="240" height="135"></canvas>
+      </div>
+      <button class="export-btn" onclick="exportPng('menu', 'preview-menu.png')">SAVE PNG</button>
+    </div>
+
+  </div>
+
+  <div class="legend">
+    salve os PNGs em <span>assets/</span> para usar no README
+  </div>
+
+<script>
+  function c(hex) {
+    const r = Math.round(((hex >> 11) & 0x1F) * 255 / 31);
+    const g = Math.round(((hex >> 5)  & 0x3F) * 255 / 63);
+    const b = Math.round((hex & 0x1F) * 255 / 31);
+    return `rgb(${r},${g},${b})`;
+  }
+
+  const CLR_BG        = c(0x0000);
+  const CLR_GREEN     = c(0x07E0);
+  const CLR_GREEN_DIM = c(0x03E0);
+  const CLR_BLUE      = c(0x001F);
+  const CLR_ORANGE    = c(0xFD20);
+  const CLR_GRAY      = c(0x4208);
+  const CLR_DARK      = c(0x0841);
+  const C_0010        = c(0x0010);
+  const C_0200        = c(0x0200);
+  const C_0300        = c(0x0300);
+  const C_0420        = c(0x0420);
+  const C_0008        = c(0x0008);
+
+  const fill  = (ctx, x, y, w, h, col) => { ctx.fillStyle = col; ctx.fillRect(x, y, w, h); };
+  const hline = (ctx, x, y, w, col)    => { ctx.strokeStyle = col; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(x, y+.5); ctx.lineTo(x+w, y+.5); ctx.stroke(); };
+  const rect  = (ctx, x, y, w, h, col) => { ctx.strokeStyle = col; ctx.lineWidth = 1; ctx.strokeRect(x+.5, y+.5, w-1, h-1); };
+
+  function roundRect(ctx, x, y, w, h, r, stroke, bg) {
+    ctx.beginPath();
+    ctx.moveTo(x+r, y);
+    ctx.lineTo(x+w-r, y); ctx.arcTo(x+w, y,   x+w, y+r,   r);
+    ctx.lineTo(x+w, y+h-r); ctx.arcTo(x+w, y+h, x+w-r, y+h, r);
+    ctx.lineTo(x+r, y+h);   ctx.arcTo(x,   y+h, x,   y+h-r, r);
+    ctx.lineTo(x,   y+r);   ctx.arcTo(x,   y,   x+r, y,     r);
+    ctx.closePath();
+    if (bg)     { ctx.fillStyle   = bg;     ctx.fill();   }
+    if (stroke) { ctx.strokeStyle = stroke; ctx.lineWidth = 1; ctx.stroke(); }
+  }
+
+  function text(ctx, str, x, y, font, col, align = 'center', base = 'middle') {
+    ctx.font = font; ctx.fillStyle = col;
+    ctx.textAlign = align; ctx.textBaseline = base;
+    ctx.fillText(str, x, y);
+  }
+
+  function drawSplash() {
+    const ctx = document.getElementById('splash').getContext('2d');
+    fill(ctx, 0, 0, 240, 135, CLR_BG);
+    rect(ctx, 2, 2, 236, 131, CLR_GREEN_DIM);
+    rect(ctx, 3, 3, 234, 129, C_0200);
+    text(ctx, 'ORUAM BSS', 120, 40, '300 22px "Orbitron", monospace', CLR_GREEN);
+    text(ctx, 'BASIC  SECURITY  SUITE', 120, 62, '9px "Courier New", monospace', CLR_GRAY);
+    hline(ctx, 20, 72, 200, CLR_GREEN_DIM);
+    text(ctx, 'v1.0.0', 120, 82, '9px monospace', CLR_GREEN_DIM);
+    rect(ctx, 19, 103, 202, 7, CLR_GREEN_DIM);
+    fill(ctx, 20, 104, 200, 5, CLR_GREEN);
+    text(ctx, 'SYSTEM READY', 120, 124, '9px monospace', CLR_GREEN);
+  }
+
+  function drawMenu() {
+    const ctx = document.getElementById('menu').getContext('2d');
+    fill(ctx, 0, 0, 240, 135, CLR_BG);
+    fill(ctx, 0, 0, 240, 16, C_0010);
+    hline(ctx, 0, 16, 240, CLR_GREEN_DIM);
+    text(ctx, '  ORUAM BSS  v1.0.0', 2, 8, '9px monospace', CLR_GREEN, 'left');
+
+    const items = [
+      { label: 'WIFI',      color: CLR_GREEN  },
+      { label: 'NETWORK',   color: CLR_BLUE   },
+      { label: 'BLUETOOTH', color: CLR_BLUE   },
+      { label: 'HARDWARE',  color: CLR_ORANGE },
+      { label: 'CRYPTO',    color: CLR_GREEN  },
+      { label: 'CONFIG',    color: CLR_GRAY   },
+    ];
+
+    const tW = 77, tH = 50, pX = 2, pY = 18, gX = 2, gY = 2;
+    items.forEach((item, i) => {
+      const col = i % 3, row = Math.floor(i / 3);
+      const x = pX + col * (tW + gX), y = pY + row * (tH + gY);
+      const sel = (i === 0);
+      roundRect(ctx, x, y, tW, tH, 4, sel ? item.color : CLR_DARK, sel ? CLR_DARK : C_0420);
+      text(ctx, item.label, x + tW/2, y + tH/2, '9px monospace', sel ? item.color : CLR_GRAY);
+    });
+
+    hline(ctx, 0, 122, 240, C_0010);
+    fill(ctx, 0, 122, 240, 13, C_0008);
+    text(ctx, '  < > nav  ^ row  ok select', 2, 129, '8px monospace', C_0300, 'left');
+  }
+
+  function exportPng(id, filename) {
+    const canvas = document.getElementById(id);
+    const a = document.createElement('a');
+    a.download = filename;
+    a.href = canvas.toDataURL('image/png');
+    a.click();
+  }
+
+  document.fonts.ready.then(() => {
+    drawSplash();
+    drawMenu();
+  });
+</script>
+</body>
+</html>

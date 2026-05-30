@@ -1,0 +1,18 @@
+{
+  "version": 1,
+  "author": "Oruam Oliuj",
+  "editor": "wokwi",
+  "parts": [
+    {
+      "type": "board-m5stack-cardputer",
+      "id": "cardputer",
+      "top": 0,
+      "left": 0,
+      "attrs": {}
+    }
+  ],
+  "connections": [
+    ["$serialMonitor:RX", "cardputer:RXD0", "", []],
+    ["$serialMonitor:TX", "cardputer:TXD0", "", []]
+  ]
+}

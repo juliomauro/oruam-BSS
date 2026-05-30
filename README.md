@@ -1,61 +1,80 @@
-# ⚡ ORUAM BSS — Basic Security Suite
+# ORUAM BSS — Basic Security Suite
 
-> A portable security toolkit for the **M5Stack Core2 ADV**, built on ESP32.  
-> Developed by [@juliomauro](https://github.com/juliomauro) · Codename: **Oruam Oliuj**
+> A portable security toolkit for the **M5Cardputer ADV**, built on ESP32-S3.  
+> Developed by [@juliomauro](https://github.com/juliomauro) · Codename: **KIRK**
 
 ---
 
-## 📖 About
+## Preview
 
-**ORUAM BSS** is a custom firmware for the M5Stack Core2 ADV that turns the device into a compact, handheld security reconnaissance tool. The project explores the real limits of what an ESP32-based device can do in the field of network and wireless security — no Linux, no external SBCs, pure embedded C++.
+| Boot Splash | Main Menu |
+|---|---|
+| ![Boot Splash](assets/preview-splash.png) | ![Main Menu](assets/preview-menu.png) |
+
+> Screenshots generated from `preview.html` — pixel-accurate render of the 240×135 display.
+
+---
+
+## About
+
+**ORUAM BSS** is a custom firmware for the M5Cardputer ADV that turns the device into a compact, handheld security reconnaissance tool. The project explores what an ESP32-S3-based device can do in the field of network and wireless security — no Linux, no external SBCs, pure embedded C++.
 
 The name carries a double meaning: **ORUAM** is the author's security codename, and **BSS** (*Basic Security Suite*) is also a reference to the 802.11 wireless term *Basic Service Set* — a nod to the WiFi-heavy nature of the tool.
 
-**Stack:** C++ · PlatformIO · Arduino Core · M5Unified · LovyanGFX
+**Stack:** C++ · PlatformIO · Arduino Core · M5Unified
 
 ---
 
-## 🖥️ Hardware
+## Hardware
 
 | Component | Spec |
 |---|---|
-| Platform | M5Stack Core2 ADV |
-| SoC | ESP32-D0WDQ6-V3 (dual-core Xtensa LX6, 240MHz) |
-| RAM | 520KB SRAM + 8MB PSRAM |
-| Flash | 16MB |
-| Display | 2" IPS TFT · 320×240 · ILI9342C · Capacitive touch |
-| Wireless | WiFi 802.11 b/g/n (2.4GHz) · Bluetooth 4.2 / BLE |
-| Storage | MicroSD card |
+| Platform | M5Cardputer ADV |
+| SoC | ESP32-S3FN8 (dual-core Xtensa LX7, 240MHz) |
+| RAM | 512KB SRAM + 8MB PSRAM |
+| Flash | 8MB |
+| Display | 1.14" IPS TFT · 240×135 · ST7789 |
+| Input | Full QWERTY keyboard + physical arrow keys |
+| Wireless | WiFi 802.11 b/g/n (2.4GHz) · Bluetooth 5.0 / BLE |
+| Extra | Microphone · IR transmitter · Module expansion slot |
 
 ---
 
-## 🔧 Planned Modules
+## Navigation
 
-### 📡 WiFi
+| Key | Action |
+|---|---|
+| `◄` `▲` `►` | Navigate menu grid |
+| `ok` | Select module |
+| Side button | Next item (fallback) |
+
+---
+
+## Planned Modules
+
+### WiFi
 - [ ] Network Scanner — SSID, BSSID, channel, RSSI, encryption type
 - [ ] Beacon Sniffer — passive 802.11 management frame capture (promiscuous mode)
 - [ ] Deauth Detector — detect deauthentication attacks in the air
 - [ ] Evil Twin Detector — identify rogue APs spoofing known SSIDs
 
-### 🌐 Network (TCP/IP)
+### Network (TCP/IP)
 - [ ] Host Discovery — ARP sweep on local subnet
 - [ ] Port Scanner — TCP connect scan with configurable range
-- [ ] Banner Grabber — HTTP, SSH, FTP, Telnet, SNMP service fingerprinting
+- [ ] Banner Grabber — HTTP, SSH, FTP, Telnet service fingerprinting
 - [ ] SSL Inspector — TLS certificate info and cipher inspection
 - [ ] DNS Lookup / Reverse DNS
 - [ ] MAC Vendor Lookup — OUI database stored on SD card
 
-### 🔵 Bluetooth
+### Bluetooth
 - [ ] BLE Scanner — device discovery, RSSI, UUIDs, advertised name
 - [ ] GATT Explorer — browse services and characteristics of BLE devices
-- [ ] BLE Advertiser Spoof Detector
 
-### 🔌 Hardware / Physical
-- [ ] I2C Scanner — detect devices on the I2C bus via Grove/GPIO
+### Hardware / Physical
+- [ ] I2C Scanner — detect devices on the I2C bus
 - [ ] UART Monitor — serial bus sniffer via GPIO pins
-- [ ] GPIO Logic Probe — basic digital signal inspection
 
-### 🔐 Crypto / Utils
+### Crypto / Utils
 - [ ] Hash Calculator — MD5 / SHA1 / SHA256 (hardware accelerated)
 - [ ] Base64 Encoder / Decoder
 - [ ] Entropy Analyzer — detect encrypted or compressed data streams
@@ -63,14 +82,15 @@ The name carries a double meaning: **ORUAM** is the author's security codename, 
 
 ---
 
-## ✅ Implementation Status
+## Implementation Status
 
 ### Core / UI
-- [ ] PlatformIO project structure
-- [ ] M5Unified initialization
-- [ ] Graphical menu system (icon grid, highlight, navigation)
+- [x] PlatformIO project structure
+- [x] M5Unified initialization (M5Cardputer board target)
+- [x] Boot splash screen with animated loading bar
+- [x] Graphical menu system — 3×2 icon grid with highlight and navigation
+- [x] Arrow key navigation (◄ ▲ ►) + side button fallback
 - [ ] Status bar (IP, battery, SD)
-- [ ] Button handler (A / B / C)
 - [ ] SD card logging
 
 ### Modules
@@ -95,51 +115,68 @@ The name carries a double meaning: **ORUAM** is the author's security codename, 
 
 ---
 
-## 🚀 Development Setup
+## Development Setup
 
 ```bash
-# Clone the repository
-git clone https://github.com/juliomauro/oruam-bss.git
-cd oruam-bss
-
-# Open in VS Code with PlatformIO extension installed
+git clone https://github.com/juliomauro/oruam-BSS.git
+cd oruam-BSS
 code .
+```
 
+Requires [PlatformIO](https://platformio.org/) installed in VS Code.
+
+```bash
 # Build
 pio run
 
-# Upload to M5Stack Core2 ADV
+# Upload to M5Cardputer
 pio run --target upload
 
 # Monitor serial output
 pio device monitor
 ```
 
-### Dependencies
+### platformio.ini
 
 ```ini
-; platformio.ini
-[env:m5stack-core2]
-platform    = espressif32
-board       = m5stack-core2
-framework   = arduino
+[env:m5stack-cardputer]
+platform  = espressif32
+board     = m5stack-stamps3
+framework = arduino
+
+build_flags =
+    -DARDUINO_USB_MODE=1
+    -DARDUINO_USB_CDC_ON_BOOT=1
+    -DBOARD_HAS_PSRAM
 
 lib_deps =
-    m5stack/M5Unified
-    lovyan03/LovyanGFX
+    m5stack/M5Unified @ ^0.2.2
 ```
+
+### Arrow key calibration
+
+The physical arrow key codes depend on the M5Unified firmware version. If navigation does not respond, add this to `loop()` temporarily to read the real codes:
+
+```cpp
+if (M5.Keyboard.isChange() && M5.Keyboard.isPressed()) {
+    for (auto ch : M5.Keyboard.keysState().word)
+        Serial.printf("key: 0x%02X\n", (uint8_t)ch);
+}
+```
+
+Then update the `switch` cases in `include/menu.h` with the values printed to serial.
 
 ---
 
-## ⚠️ Disclaimer
+## Disclaimer
 
 This tool is intended for **authorized security assessments, educational purposes, and personal research only**. Do not use against networks or devices you do not own or have explicit permission to test. The author takes no responsibility for misuse.
 
 ---
 
-## 📄 License
+## License
 
-Apache License 2.0 — see [LICENSE](LICEN
+Apache License 2.0 — see [LICENSE](LICENSE)
 
 ---
 
