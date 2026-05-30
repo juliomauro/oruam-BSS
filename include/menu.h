@@ -1,5 +1,5 @@
 #pragma once
-#include <M5Unified.h>
+#include <M5Cardputer.h>
 #include "config.h"
 
 // ============================================================
@@ -35,7 +35,7 @@ const int TILE_GAP_X = 2;
 const int TILE_GAP_Y = 2;
 
 void drawMenuStub() {
-    auto& lcd = M5.Display;
+    auto& lcd = M5Cardputer.Display;
     lcd.fillScreen(CLR_BG);
 
     // topbar
@@ -76,10 +76,10 @@ void drawMenuStub() {
 }
 
 void handleMenuInput() {
-    M5.update();
+    M5Cardputer.update();
 
-    if (M5.Keyboard.isChange() && M5.Keyboard.isPressed()) {
-        auto status = M5.Keyboard.keysState();
+    if (M5Cardputer.Keyboard.isChange() && M5Cardputer.Keyboard.isPressed()) {
+        auto status = M5Cardputer.Keyboard.keysState();
 
         int col = selectedItem % 3;
         int row = selectedItem / 3;
@@ -105,7 +105,7 @@ void handleMenuInput() {
         }
 
         if (status.enter) {
-            auto& lcd = M5.Display;
+            auto& lcd = M5Cardputer.Display;
             lcd.fillScreen(CLR_BG);
             lcd.setTextDatum(middle_center);
             lcd.setTextColor(CLR_GREEN);
@@ -120,7 +120,7 @@ void handleMenuInput() {
     }
 
     // BtnA (botão lateral) = navega próximo item como fallback
-    if (M5.BtnA.wasPressed()) {
+    if (M5Cardputer.BtnA.wasPressed()) {
         selectedItem = (selectedItem + 1) % MENU_COUNT;
         drawMenuStub();
     }

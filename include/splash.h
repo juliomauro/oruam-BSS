@@ -1,5 +1,5 @@
 #pragma once
-#include <M5Unified.h>
+#include <M5Cardputer.h>
 #include "config.h"
 
 // ============================================================
@@ -8,7 +8,7 @@
 // ============================================================
 
 void drawSplash() {
-    auto& lcd = M5.Display;
+    auto& lcd = M5Cardputer.Display;
 
     lcd.fillScreen(CLR_BG);
 
