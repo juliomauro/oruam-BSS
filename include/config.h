@@ -18,8 +18,11 @@
 #define CLR_BG          0x0000  // preto
 #define CLR_GREEN       0x07E0  // verde primário
 #define CLR_GREEN_DIM   0x03E0  // verde escuro
-#define CLR_BLUE        0x001F  // azul primário
-#define CLR_ORANGE      0xFD20  // laranja
 #define CLR_WHITE       0xFFFF
-#define CLR_GRAY        0x4208  // cinza escuro
-#define CLR_DARK        0x0841  // fundo dos tiles
+#define CLR_GRAY        0x4208  // cinza médio
+#define CLR_DARK        0x0841  // cinza muito escuro (tile bg)
+#define CLR_TOPBAR      0x2104  // cinza escuro neutro (topbar/statusbar)
+#define CLR_STATUSBAR   0x1082  // cinza quase preto (statusbar bg)
+
+// Hardware
+#define LED_PIN         21      // NeoPixel RGB (WS2812) do M5Cardputer

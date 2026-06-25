@@ -1,5 +1,8 @@
 .pio/
+.claude/
 .vscode/
 .DS_Store
 **/.DS_Store
+._*
+**/._*
 NEXT_STEPS.md

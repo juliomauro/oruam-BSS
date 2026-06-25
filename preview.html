@@ -98,18 +98,18 @@
     return `rgb(${r},${g},${b})`;
   }
 
-  const CLR_BG        = c(0x0000);
-  const CLR_GREEN     = c(0x07E0);
-  const CLR_GREEN_DIM = c(0x03E0);
-  const CLR_BLUE      = c(0x001F);
-  const CLR_ORANGE    = c(0xFD20);
-  const CLR_GRAY      = c(0x4208);
-  const CLR_DARK      = c(0x0841);
-  const C_0010        = c(0x0010);
-  const C_0200        = c(0x0200);
-  const C_0300        = c(0x0300);
-  const C_0420        = c(0x0420);
-  const C_0008        = c(0x0008);
+  const CLR_BG         = c(0x0000);
+  const CLR_GREEN      = c(0x07E0);
+  const CLR_GREEN_DIM  = c(0x03E0);
+  const CLR_WHITE      = c(0xFFFF);
+  const CLR_GRAY       = c(0x4208);
+  const CLR_DARK       = c(0x0841);
+  const CLR_TOPBAR     = c(0x2104);
+  const CLR_STATUSBAR  = c(0x1082);
+  const CLR_TEXT_DIM   = c(0x630C);
+  const CLR_BORDER_DIM = c(0x2104);
+  const C_0200         = c(0x0200);
+  const C_0300         = c(0x0300);
 
   const fill  = (ctx, x, y, w, h, col) => { ctx.fillStyle = col; ctx.fillRect(x, y, w, h); };
   const hline = (ctx, x, y, w, col)    => { ctx.strokeStyle = col; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(x, y+.5); ctx.lineTo(x+w, y+.5); ctx.stroke(); };
@@ -150,31 +150,29 @@
   function drawMenu() {
     const ctx = document.getElementById('menu').getContext('2d');
     fill(ctx, 0, 0, 240, 135, CLR_BG);
-    fill(ctx, 0, 0, 240, 16, C_0010);
+
+    // topbar
+    fill(ctx, 0, 0, 240, 16, CLR_TOPBAR);
     hline(ctx, 0, 16, 240, CLR_GREEN_DIM);
     text(ctx, '  ORUAM BSS  v1.0.0', 2, 8, '9px monospace', CLR_GREEN, 'left');
 
-    const items = [
-      { label: 'WIFI',      color: CLR_GREEN  },
-      { label: 'NETWORK',   color: CLR_BLUE   },
-      { label: 'BLUETOOTH', color: CLR_BLUE   },
-      { label: 'HARDWARE',  color: CLR_ORANGE },
-      { label: 'CRYPTO',    color: CLR_GREEN  },
-      { label: 'CONFIG',    color: CLR_GRAY   },
-    ];
-
+    const labels = ['WIFI', 'NETWORK', 'BLUETOOTH', 'HARDWARE', 'CRYPTO', 'CONFIG'];
     const tW = 77, tH = 50, pX = 2, pY = 18, gX = 2, gY = 2;
-    items.forEach((item, i) => {
+
+    labels.forEach((label, i) => {
       const col = i % 3, row = Math.floor(i / 3);
       const x = pX + col * (tW + gX), y = pY + row * (tH + gY);
       const sel = (i === 0);
-      roundRect(ctx, x, y, tW, tH, 4, sel ? item.color : CLR_DARK, sel ? CLR_DARK : C_0420);
-      text(ctx, item.label, x + tW/2, y + tH/2, '9px monospace', sel ? item.color : CLR_GRAY);
+      const border = sel ? CLR_GREEN : CLR_BORDER_DIM;
+      const txtCol = sel ? CLR_WHITE : CLR_TEXT_DIM;
+      roundRect(ctx, x, y, tW, tH, 4, border, CLR_DARK);
+      text(ctx, label, x + tW/2, y + tH/2, '9px monospace', txtCol);
     });
 
-    hline(ctx, 0, 122, 240, C_0010);
-    fill(ctx, 0, 122, 240, 13, C_0008);
-    text(ctx, '  < > nav  ^ row  ok select', 2, 129, '8px monospace', C_0300, 'left');
+    // statusbar
+    hline(ctx, 0, 122, 240, CLR_TOPBAR);
+    fill(ctx, 0, 122, 240, 13, CLR_STATUSBAR);
+    text(ctx, '  , / col   ; . row   ok select', 2, 129, '8px monospace', C_0300, 'left');
   }
 
   function exportPng(id, filename) {

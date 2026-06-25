@@ -1,6 +1,10 @@
 #pragma once
 #include <M5Cardputer.h>
+#include <WiFi.h>
 #include "config.h"
+#include "input.h"
+#include "modules/config.h"
+#include "modules/network.h"
 
 // ============================================================
 //  Menu principal — ORUAM BSS
@@ -10,16 +14,15 @@
 
 struct MenuItem {
     const char* label;
-    uint16_t    color;
 };
 
 const MenuItem MENU_ITEMS[] = {
-    { "WIFI",      CLR_GREEN  },
-    { "NETWORK",   CLR_BLUE   },
-    { "BLUETOOTH", CLR_BLUE   },
-    { "HARDWARE",  CLR_ORANGE },
-    { "CRYPTO",    CLR_GREEN  },
-    { "CONFIG",    CLR_GRAY   },
+    { "WIFI"      },
+    { "NETWORK"   },
+    { "BLUETOOTH" },
+    { "HARDWARE"  },
+    { "CRYPTO"    },
+    { "CONFIG"    },
 };
 
 const int MENU_COUNT = 6;
@@ -39,12 +42,19 @@ void drawMenuStub() {
     lcd.fillScreen(CLR_BG);
 
     // topbar
-    lcd.fillRect(0, 0, DISPLAY_WIDTH, 16, 0x0010);
+    lcd.fillRect(0, 0, DISPLAY_WIDTH, 16, CLR_TOPBAR);
     lcd.drawFastHLine(0, 16, DISPLAY_WIDTH, CLR_GREEN_DIM);
     lcd.setTextDatum(middle_left);
     lcd.setTextColor(CLR_GREEN);
     lcd.setFont(&fonts::DejaVu9);
     lcd.drawString("  ORUAM BSS  v" BSS_VERSION, 2, 8);
+
+    // indicador WiFi
+    if (WiFi.status() == WL_CONNECTED) {
+        lcd.setTextDatum(middle_right);
+        lcd.setTextColor(CLR_GREEN);
+        lcd.drawString("WiFi \xb7 ", DISPLAY_WIDTH, 8);
+    }
 
     // tiles 3×2
     for (int i = 0; i < MENU_COUNT; i++) {
@@ -53,9 +63,9 @@ void drawMenuStub() {
         int x   = TILE_PAD_X + col * (TILE_W + TILE_GAP_X);
         int y   = TILE_PAD_Y + row * (TILE_H + TILE_GAP_Y);
 
-        uint16_t borderColor = (i == selectedItem) ? MENU_ITEMS[i].color : 0x0841;
-        uint16_t bgColor     = (i == selectedItem) ? 0x0841 : 0x0420;
-        uint16_t txtColor    = (i == selectedItem) ? MENU_ITEMS[i].color : CLR_GRAY;
+        uint16_t borderColor = (i == selectedItem) ? CLR_GREEN : 0x2104;
+        uint16_t bgColor     = 0x0841;
+        uint16_t txtColor    = (i == selectedItem) ? CLR_WHITE : 0x630C;
 
         lcd.fillRoundRect(x, y, TILE_W, TILE_H, 4, bgColor);
         lcd.drawRoundRect(x, y, TILE_W, TILE_H, 4, borderColor);
@@ -67,8 +77,8 @@ void drawMenuStub() {
     }
 
     // statusbar
-    lcd.drawFastHLine(0, DISPLAY_HEIGHT - 13, DISPLAY_WIDTH, 0x0010);
-    lcd.fillRect(0, DISPLAY_HEIGHT - 13, DISPLAY_WIDTH, 13, 0x0008);
+    lcd.drawFastHLine(0, DISPLAY_HEIGHT - 13, DISPLAY_WIDTH, CLR_TOPBAR);
+    lcd.fillRect(0, DISPLAY_HEIGHT - 13, DISPLAY_WIDTH, 13, CLR_STATUSBAR);
     lcd.setTextDatum(middle_left);
     lcd.setTextColor(0x0300);
     lcd.setFont(&fonts::DejaVu9);
@@ -92,10 +102,10 @@ void handleMenuInput() {
             //   Serial.printf("key: 0x%02X\n", code);
             // e ajuste os valores abaixo com os códigos reais.
             switch (code) {
-                case 0xB4: col = (col + 2) % 3; nav = true; break; // seta esquerda
-                case 0xB7: col = (col + 1) % 3; nav = true; break; // seta direita
-                case 0xB5: row = 1 - row;        nav = true; break; // seta cima
-                case 0xB6: row = 1 - row;        nav = true; break; // seta baixo
+                case 0x2C: col = (col + 2) % 3; nav = true; break; // , → esquerda
+                case 0x2F: col = (col + 1) % 3; nav = true; break; // / → direita
+                case 0x3B: row = 1 - row;        nav = true; break; // ; → cima
+                case 0x2E: row = 1 - row;        nav = true; break; // . → baixo
             }
         }
 
@@ -105,16 +115,13 @@ void handleMenuInput() {
         }
 
         if (status.enter) {
-            auto& lcd = M5Cardputer.Display;
-            lcd.fillScreen(CLR_BG);
-            lcd.setTextDatum(middle_center);
-            lcd.setTextColor(CLR_GREEN);
-            lcd.setFont(&fonts::DejaVu9);
-            lcd.drawString("[ " + String(MENU_ITEMS[selectedItem].label) + " ]",
-                           DISPLAY_WIDTH / 2, DISPLAY_HEIGHT / 2 - 8);
-            lcd.setTextColor(CLR_GRAY);
-            lcd.drawString("coming soon...", DISPLAY_WIDTH / 2, DISPLAY_HEIGHT / 2 + 8);
-            delay(1200);
+            switch (selectedItem) {
+                case 1: runNetwork(); break;
+                case 5: runConfig();  break;
+                default:
+                    showMessage(MENU_ITEMS[selectedItem].label, "coming soon...", nullptr, CLR_GRAY);
+                    break;
+            }
             drawMenuStub();
         }
     }

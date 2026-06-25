@@ -21,7 +21,7 @@
 
 The name carries a double meaning: **ORUAM** is the author's security codename, and **BSS** (*Basic Security Suite*) is also a reference to the 802.11 wireless term *Basic Service Set* — a nod to the WiFi-heavy nature of the tool.
 
-**Stack:** C++ · PlatformIO · Arduino Core · M5Unified
+**Stack:** C++ · PlatformIO · Arduino Core · M5Cardputer library · Adafruit NeoPixel
 
 ---
 
@@ -36,49 +36,88 @@ The name carries a double meaning: **ORUAM** is the author's security codename, 
 | Display | 1.14" IPS TFT · 240×135 · ST7789 |
 | Input | Full QWERTY keyboard + physical arrow keys |
 | Wireless | WiFi 802.11 b/g/n (2.4GHz) · Bluetooth 5.0 / BLE |
+| RGB LED | WS2812 NeoPixel (GPIO 21) |
 | Extra | Microphone · IR transmitter · Module expansion slot |
+| Storage | MicroSD card (SPI — CS:12 SCK:40 MISO:39 MOSI:14) |
 
 ---
 
 ## Navigation
 
-| Key | Action |
-|---|---|
-| `◄` `▲` `►` | Navigate menu grid |
-| `ok` | Select module |
-| Side button | Next item (fallback) |
+| Key | Symbol | Action |
+|---|---|---|
+| `,` | ◄ | Navigate left / previous column |
+| `/` | ► | Navigate right / next column |
+| `;` | ▲ | Navigate up / scroll up in lists |
+| `.` | ▼ | Navigate down / scroll down in lists |
+| `Enter` | ok | Select / confirm |
+| `` ` `` | ESC | Back / cancel / abort (same physical key as `` ` `` and `~` — press without Fn) |
+| Side button | — | Next item (fallback) |
 
 ---
 
-## Planned Modules
+## Modules
 
-### WiFi
+### Implemented
+
+#### CONFIG
+- **WiFi Connect** — enter SSID and password via keyboard, connects and shows acquired IP
+- **Brightness** — real-time display brightness slider (`,`/`;`/`/`/`.` to adjust)
+- **About** — firmware version, codename, author, board, chip, free heap, IP if connected
+
+#### NETWORK *(requires WiFi connection)*
+- **Host Discovery** — TCP sweep on the local /24 subnet (ports 80 and 22, 100ms timeout). Shows live results during scan. Press `ESC` to abort, `s` to save results as CSV on SD card.
+- **Port Scan** — TCP connect scan on 15 common ports (FTP, SSH, Telnet, SMTP, DNS, HTTP, POP3, IMAP, HTTPS, SMB, MySQL, RDP, VNC, HTTP-Alt, HTTPS-Alt) against a user-supplied IP. Press `ESC` to abort, `s` to save as CSV.
+- **DNS Lookup** — resolves a hostname to IP address
+
+### Planned
+
+#### WIFI
 - [ ] Network Scanner — SSID, BSSID, channel, RSSI, encryption type
 - [ ] Beacon Sniffer — passive 802.11 management frame capture (promiscuous mode)
-- [ ] Deauth Detector — detect deauthentication attacks in the air
-- [ ] Evil Twin Detector — identify rogue APs spoofing known SSIDs
+- [ ] Evil Portal — rogue AP with captive portal
 
-### Network (TCP/IP)
-- [ ] Host Discovery — ARP sweep on local subnet
-- [ ] Port Scanner — TCP connect scan with configurable range
-- [ ] Banner Grabber — HTTP, SSH, FTP, Telnet service fingerprinting
-- [ ] SSL Inspector — TLS certificate info and cipher inspection
-- [ ] DNS Lookup / Reverse DNS
-- [ ] MAC Vendor Lookup — OUI database stored on SD card
-
-### Bluetooth
+#### BLUETOOTH
 - [ ] BLE Scanner — device discovery, RSSI, UUIDs, advertised name
 - [ ] GATT Explorer — browse services and characteristics of BLE devices
 
-### Hardware / Physical
-- [ ] I2C Scanner — detect devices on the I2C bus
-- [ ] UART Monitor — serial bus sniffer via GPIO pins
+#### IR *(built-in transmitter)*
+- [ ] TV-B-Gone — universal power-off remote
+- [ ] IR Capture — record IR signals from remotes
+- [ ] IR Replay — transmit captured signals
 
-### Crypto / Utils
-- [ ] Hash Calculator — MD5 / SHA1 / SHA256 (hardware accelerated)
+#### HARDWARE
+- [ ] I2C Scanner — detect devices on the I2C bus
+
+#### CRYPTO
+- [ ] Hash Calculator — MD5 / SHA1 / SHA256 (hardware accelerated on ESP32-S3)
 - [ ] Base64 Encoder / Decoder
-- [ ] Entropy Analyzer — detect encrypted or compressed data streams
 - [ ] JWT Decoder — inspect JSON Web Token payloads
+
+---
+
+## LED Feedback
+
+The onboard RGB LED (NeoPixel, GPIO 21) provides status feedback:
+
+| Event | LED behavior |
+|---|---|
+| WiFi connected | "CONNECTED" in Morse code, green |
+| WiFi failed | 3 fast blinks, red |
+
+---
+
+## SD Card Export
+
+Scan results can be saved as CSV directly to the SD card.  
+Press `s` on any result screen to export.
+
+Files are saved to `/BSS/` with auto-incremented names:
+
+| Scan type | Filename | Format |
+|---|---|---|
+| Host Discovery | `hosts_001.csv` | `ip` |
+| Port Scan | `ports_001.csv` | `target,port,service` |
 
 ---
 
@@ -86,32 +125,49 @@ The name carries a double meaning: **ORUAM** is the author's security codename, 
 
 ### Core / UI
 - [x] PlatformIO project structure
-- [x] M5Unified initialization (M5Cardputer board target)
+- [x] M5Cardputer library initialization
 - [x] Boot splash screen with animated loading bar
-- [x] Graphical menu system — 3×2 icon grid with highlight and navigation
-- [x] Arrow key navigation (◄ ▲ ►) + side button fallback
+- [x] Graphical menu — 3×2 icon grid, neutral dark theme
+- [x] Arrow key navigation (`,` `/` `;` `.`) + side button fallback
+- [x] Reusable sub-menu component
+- [x] Reusable text input component (with password masking)
+- [x] RGB LED control (NeoPixel)
+- [x] SD card CSV export
 - [ ] Status bar (IP, battery, SD)
-- [ ] SD card logging
 
 ### Modules
-- [ ] WiFi — Network Scanner
-- [ ] WiFi — Beacon Sniffer
-- [ ] WiFi — Deauth Detector
-- [ ] WiFi — Evil Twin Detector
-- [ ] Network — Host Discovery (ARP)
-- [ ] Network — Port Scanner
-- [ ] Network — Banner Grabber
-- [ ] Network — SSL Inspector
-- [ ] Network — DNS Lookup
-- [ ] Network — MAC Vendor Lookup
-- [ ] Bluetooth — BLE Scanner
-- [ ] Bluetooth — GATT Explorer
-- [ ] Hardware — I2C Scanner
-- [ ] Hardware — UART Monitor
-- [ ] Crypto — Hash Calculator
-- [ ] Crypto — Base64
-- [ ] Crypto — Entropy Analyzer
-- [ ] Crypto — JWT Decoder
+- [x] CONFIG — WiFi Connect, Brightness, About
+- [x] NETWORK — Host Discovery, Port Scan, DNS Lookup
+- [ ] WIFI — Network Scanner, Beacon Sniffer, Evil Portal
+- [ ] BLUETOOTH — BLE Scanner, GATT Explorer
+- [ ] IR — TV-B-Gone, Capture, Replay
+- [ ] HARDWARE — I2C Scanner
+- [ ] CRYPTO — Hash Calculator, Base64, JWT Decoder
+
+---
+
+## Project Structure
+
+```
+oruam-BSS/
+├── src/
+│   └── main.cpp              # Entry point
+├── include/
+│   ├── config.h              # Constants, colors, pin definitions
+│   ├── splash.h              # Boot splash screen
+│   ├── menu.h                # Main menu grid + input dispatch
+│   ├── input.h               # Reusable sub-menu and text input
+│   ├── led.h                 # NeoPixel RGB LED + Morse code
+│   ├── sd_utils.h            # SD card init and CSV writer
+│   └── modules/
+│       ├── config.h          # CONFIG module
+│       └── network.h         # NETWORK module
+├── assets/
+│   ├── preview-splash.png
+│   └── preview-menu.png
+├── platformio.ini
+└── wokwi.toml
+```
 
 ---
 
@@ -126,15 +182,22 @@ code .
 Requires [PlatformIO](https://platformio.org/) installed in VS Code.
 
 ```bash
-# Build
+# Build (.bin gerado em .pio/build/m5stack-cardputer/firmware.bin)
 pio run
 
-# Upload to M5Cardputer
+# Upload directly via USB
 pio run --target upload
 
 # Monitor serial output
 pio device monitor
 ```
+
+> **Note:** The system-installed PlatformIO (v4.3.4) is incompatible with Python 3.12.  
+> Install the updated version: `pip install --upgrade platformio --break-system-packages`  
+> Then use `~/.local/bin/pio run`.
+
+> **macOS SD card artifacts:** If building after the library was downloaded on macOS, run  
+> `find .pio/libdeps -name "._*" -delete` before building to remove AppleDouble metadata files.
 
 ### platformio.ini
 
@@ -144,27 +207,10 @@ platform  = espressif32
 board     = m5stack-stamps3
 framework = arduino
 
-build_flags =
-    -DARDUINO_USB_MODE=1
-    -DARDUINO_USB_CDC_ON_BOOT=1
-    -DBOARD_HAS_PSRAM
-
 lib_deps =
-    m5stack/M5Unified @ ^0.2.2
+    m5stack/M5Cardputer
+    adafruit/Adafruit NeoPixel @ ^1.12.3
 ```
-
-### Arrow key calibration
-
-The physical arrow key codes depend on the M5Unified firmware version. If navigation does not respond, add this to `loop()` temporarily to read the real codes:
-
-```cpp
-if (M5.Keyboard.isChange() && M5.Keyboard.isPressed()) {
-    for (auto ch : M5.Keyboard.keysState().word)
-        Serial.printf("key: 0x%02X\n", (uint8_t)ch);
-}
-```
-
-Then update the `switch` cases in `include/menu.h` with the values printed to serial.
 
 ---
 
