@@ -62,7 +62,7 @@ The name carries a double meaning: **ORUAM** is the author's security codename, 
 
 #### CONFIG
 - **WiFi Connect** — enter SSID and password via keyboard, connects and shows acquired IP
-- **Brightness** — real-time display brightness slider (`,`/`;`/`/`/`.` to adjust)
+- **Brightness** — real-time display brightness slider (◄ ► ▲ ▼ to adjust, ESC to cancel)
 - **About** — firmware version, codename, author, board, chip, free heap, IP if connected
 
 #### NETWORK *(requires WiFi connection)*
